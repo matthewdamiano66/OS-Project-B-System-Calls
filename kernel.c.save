@@ -1,0 +1,27 @@
+void handleInterrupt21(int*);
+void printString(char*);
+void printChar(char);
+void readString(char*);
+void readSector(char*,int);
+void makeInterrupt();
+int main(){
+	char* chars;
+	char line[80];
+	char buffer[512];
+	makeInterrupt21();
+	interrupt(0x21,0,"Enter a line: ",0,0);
+	interrupt(0x21,1,line,0,0);
+	interrupt(0x21,2,buffer,30,0);
+	interrupt(0x21,0,buffer,0,0);
+	while(1);	
+
+
+}
+
+void printString(char* c)
+{
+	//char* chars;
+
+	int i=0;
+	while(c[i]!='\0')
+		printChar(c(i++));
