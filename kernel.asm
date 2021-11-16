@@ -44,7 +44,7 @@ intr:   int #0x00       ;call the interrupt (00 will be changed above)
         pop bp
         ret
 
-;void makeInterrupt21()
+void makeInterrupt21()
 ;this sets up the interrupt 0x21 vector
 ;when an interrupt 0x21 is called in the future, 
 ;_interrupt21ServiceRoutine will run
@@ -64,7 +64,7 @@ _makeInterrupt21:
 
 ;this is called when interrupt 21 happens
 ;it will call your function:
-;void handleInterrupt21 (int AX, int BX, int CX, int DX)
+void handleInterrupt21 (int AX, int BX, int CX, int DX)
 _interrupt21ServiceRoutine:
        push dx
        push cx
