@@ -1,69 +1,100 @@
-
-void handleInterrupt21(int ax, int bx, int cx, int dx);
-void printString(char* s);
+// Lukas DeArruda
 void printChar(char c);
-void readString(char*);
-void readSector(char*,int);
-void makeInterrupt21();
-int main(){
+void printString(char* s);
+void readString(char* s);
+void readSector(char* buffer, int sector);
+void handleInterrupt21(int ax, int bx, int cs int dx);
+
+int main()
+{
+	char c;
+	char line[80];
 	char buffer[512];
-	char line [100];
-	makeInterrupt21();
-	interrupt(0x21,0,"Enter a line: ",0,0);
+
+	printString("Enter a line: ");
+
 	readString(line);
 	printString(line);
-	while(1);
 
-}
-void printChar(char c){
-	interrupt(0x10,0x0e*0x100+c,0,0,0);
+	readSector(buffer, 30);
+	printString(buffer);
+
+	makeInterrupt21();
+	interrupt(0x21,1,line,0,0);
+	interrupt(0x21,0,line,0,0);
+
+	while(1)
+	{
+	}
 }
 
 void printString(char* s)
 {
-	int i=0;
-	while(s[i]!='\0')
-		printChar(s[i++]);
-}
-
-
-
-	void readString(char* line)
+	int i;
+	//call printchar over and over again until done
+	for (i = 0; s[i]!='\0'; i++)
 	{
-	int i=0;
-	while(1){
-	line[i] = interrupt(0x16,0,0,0,0);
-	printChar(line[i]);
-	if(line[i] == '\r')
-		{
-	line[i+1]='\n';
-		printChar('\n');
-		line[i+2]='\0';
-		return;	
-		}
-	i++;
+		printChar(s[i]);
 	}
-
-
 }
-void handleInterrupt21(int ax,int bx,int cx,int dx){
-	if (ax ==0)
+
+void printChar(char c)
+{
+	interrupt(0x10,0x0e*0x100+c,0,0,0);
+}
+void readString(char* line)
+{
+	int i = 0;
+	while(1)
+	{
+		line[i] = interrupt(0x16,0,0,0,0);
+		printChar(line[i]);
+		if(line[i] == '\r')
+		{
+			line[i+1] = '\n';
+			printChar('\n');
+			break;
+
+		}
+		if(line[i] == '\b')
+		{
+			// print backspace, then space, then another backspace
+			line[i-1] = interrupt(0x10, 0x0e*0x100+0x20);
+			line[i] = interrupt(0x10, 0x0e*0x100+0x8);
+			i--;
+			continue;
+			//I think what happens here is that is you clear an
+			//entire line , the index wraps around and prints
+			//a space to the next row. Is that an issue? Maybe.
+			//Do I care? Not particularly.
+
+		}
+		i++;
+
+	}
+}
+void readSector(char* buffer, int sector)
+{
+	interrupt(0x13, 0x2*256+1, buffer, sector+1, 0x80);
+}
+
+void handleInterrupt21(int ax, int bx, int cx, int dx)
+{
+
+	if(ax == 0)
+	{
 		printString(bx);
-//	else if(ax==1)
-//	readString(bx);
-//	else if (ax==2)
-//	readSector(bx,cx);
-//	else
-	//	printString("Unhandled interrupt 21");
+	}
+	else if(ax == 1)
+	{
+		readString(bx);
+	}
+	else if(ax == 2)
+	{
+		readSector(bx, cx);
+	}
+	else
+	{
+		printString("Unknown function");
+	}
 }
-void readSector(char* buffer, int sector){
-interrupt (0x13,0,0,0,0);
-	int sector[100];
-
-
-
-}
-
-//void makeInterrupt21(){
-
-//}
